@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://api-maps.yandex.com/2.1/?lang=en_US"></script>
+  <script src="https://api.orhanaydogdu.com.tr/deprem/kandilli/live"></script>
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+  <title>Deprem Hasar Tespit Sistemi</title>
+  <style>
+    /* Add some basic styling for the map container (CSS)*/
+    body {
+      font-family: Arial;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    #mydiv {
+      width: 75%;
+      height: 62.4%;
+      position: absolute;
+      z-index: 9;
+      background-color: #f1f1f1;
+      text-align: center;
+      border: 1px solid #d3d3d3;
+      top: 31.2%;
+      left: 49.9999%;
+      transform: translate(-50%, -50%);
+      border-radius: 10px;
+    }
+    #mydivhead {
+      padding: 15px;
+      cursor: move;
+      z-index: 10;
+      background-color: #f1f1f1;
+      color: #000000;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    .container {
+      border: 4px solid #f1f1f1;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      cursor: move;
+      z-index: 20;
+    }
+    .top {
+      padding: 0px;
+      background: #f1f1f1;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      cursor: move;
+    }
+    .content {
+      padding: 0px;
+      cursor: move;
+      z-index: 20;
+    }
+    }
+
+    #bdiv {
+      width: 12.5%;
+      height: 100%;
+      position: absolute;
+      z-index: 1;
+      background-color: #ffffff;
+      text-align: center;
+      border: 1px solid #d3d3d3;
+      top: 0%;
+      left: 0%;
+      border-radius: 10px;
+      max-height: 100%;
+    }
+    #bdivhead {
+      padding: 15px;
+      cursor: move;
+      z-index: 1;
+      background-color: #f1f1f1;
+      color: #000000;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    .container1 {
+      border: 4px solid #ffffff;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      cursor: move;
+      z-index: 1;
+    }
+    .content1 {
+      padding: 0px;
+      cursor: move;
+      z-index: 1;
+    }
+    }
+    #bdivcontent {
+    font-size: 6px;
+    }
+    #bdivcontent table {
+        font-size: 12px;
+    }
+
+
+    #newdiv {
+      width: 12.5%;
+      height: 100%;
+      position: absolute;
+      z-index: 9;
+      background-color: rgb(255, 255, 240);
+      text-align: center;
+      border: 1px solid #d3d3d3;
+      top: 0%;
+      left: 87.51%;
+      border-radius: 10px;
+      overflow-y: auto;
+      max-height: 100%;
+    }
+    #newdivhead {
+      padding: 15px;
+      cursor: move;
+      z-index: 10;
+      background-color: #f1f1f1;
+      color: #000000;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    .container2 {
+      border: 4px solid rgb(255, 255, 240);
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      cursor: move;
+      z-index: 10;
+    }
+    .content2 {
+      padding: 0px;
+      cursor: move;
+      z-index: 10;
+    }
+    }
+
+
+    #cdiv {
+      width: 75%;
+      height: 34.6%;
+      position: absolute;
+      z-index: 9;
+      background-color: #ffffff;
+      text-align: center;
+      /*border: 1px solid #d3d3d3;*/
+      top: 65.4%;
+      left: 12.499999%;
+      border-radius: 10px;
+    }
+    #cdivhead {
+      padding: 15px;
+      cursor: move;
+      z-index: 10;
+      background-color: #f1f1f1;
+      color: #000000;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    .container3 {
+      border: 4px solid #ffffff;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+      cursor: move;
+      z-index: 10;
+    }
+    .content3 {
+      padding: 0px;
+      cursor: move;
+      z-index: 10;
+      width: 60%;
+      height: 100%;
+    }
+    }
+
+
+    #earthquakeDetails {
+    display: none;
+    position: fixed;
+    background-color: white;
+    border: 1px solid black;
+    padding: 5px;
+    z-index: 1;
+    top: -5px;
+    right: 2%;
+    font-size: 12px;
+    }
+    #slopeChartContainer {
+  width: 700px;
+  height: 200px;
+  position: relative;
+  text-align: right;
+  float: right;
+  right: -30%;
+    }
+    #chart_div {
+      width: 700px;
+      height: 200px;
+      position: relative;
+      text-align: right;
+      float: right;
+      right: -30%;
+    }
+    #path {
+            background-color: rgb(0, 0, 255); /* Mavi overlay rengi (şeffaflık ile) */
+            fill: rgba(0, 0, 255, 0.596);
+    }
+
+
+.tab {
+  overflow: hidden;
+  width: auto;
+}
+.tab button {
+  background-color: inherit;
+  display: block; /* Change to block */
+  color: black;
+  width: calc(30% - 6px);
+  padding: 22px 16px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.3s;
+  margin: 0 0 5px 0;
+  margin-top: 5px;
+}
+.tab button:hover {
+  background-color: #ddd;
+}
+.tab button.active {
+  background-color: #ccc;
+}
+.tab button.tablinks {
+  background-color: #eee;
+  display: block;
+  color: 444;
+  width: calc(30% - 6px);
+  padding: 18px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  text-align: left;
+  transition: 0.4s;
+  margin: 0 0 5px 0;
+  margin-top: 0px;
+  width: 100%;
+}
+.tab button.tablinks:hover {
+  background-color: #ccc;
+}
+
+.accordion {
+        background-color: #eee;
+        cursor: pointer;
+        color: #444;
+        padding: 18px;
+        width: 100%;
+        text-align: left;
+        border: none;
+        outline: none;
+        transition: 0.4s;
+}       
+.active, .accordion:hover {
+        background-color: #ccc;
+}
+.panel {
+        padding: 0 18px;
+        background-color: white;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.2s ease-out;
+}
+.accordion:after {
+      content: '\02795'; /* Unicode character for "plus" sign (+) */
+      font-size: 8px;
+      color: #777;
+      float: right;
+      margin-left: 5px;
+}
+.active:after {
+      content: "\2796"; /* Unicode character for "minus" sign (-) */
+}
+
+.details {
+        font-size: 6px;
+}
+
+.tabcontent {
+  display: flex;
+  padding: 12px;
+  border: none;
+  width: calc(35% - 20px);
+  border-left: none;
+  height: 25%;
+  display: none;
+  right: 150%;
+  margin-right: 50%;
+  max-height: 280;
+}
+.tabcontent-wrapper {
+  display: flex;
+  max-height: 200;
+}
+.tabcontent-right {
+    flex: 1;
+    right: 2550%;
+}
+
+.switch {
+  display: block;
+  --width-of-switch: 3.5em;
+  --height-of-switch: 2em;
+  /* size of sliding icon -- sun and moon */
+  --size-of-icon: 1.4em;
+  /* it is like a inline-padding of switch */
+  --slider-offset: 0.3em;
+  position: relative;
+  z-index: 15;
+  width: var(--width-of-switch);
+  height: var(--height-of-switch);
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  transition: .4s;
+  border-radius: 30px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: var(--size-of-icon,1.4em);
+  width: var(--size-of-icon,1.4em);
+  border-radius: 20px;
+  left: var(--slider-offset,0.3em);
+  top: 50%;
+  transform: translateY(-50%);
+  background: linear-gradient(40deg,#ff0080,#ff8c00 70%);
+  ;
+ transition: .4s;
+}
+input:checked + .slider {
+  background-color: #303136;
+}
+input:checked + .slider:before {
+  left: calc(100% - (var(--size-of-icon,1.4em) + var(--slider-offset,0.3em)));
+  background: #303136;
+  /* change the value of second inset in box-shadow to change the angle and direction of the moon  */
+  box-shadow: inset -3px -2px 5px -2px #8983f7, inset -10px -4px 0 0 #a3dafb;
+}
+  </style>
+</head>
+<body>
+  
+<label class="switch" onclick="toggleBackground()">
+  <input id="backgroundSwitch" type="checkbox">
+  <span class="slider"></span>
+</label>
+
+
+  
+  
+    
+  <div id="mydiv">
+    <div class="container">
+      <div class="top">
+      </div>
+    <div class = "content">
+    <div id="mydivhead"> </div>
+  </div>
+  </div>
+  </div>
+
+  <div id="newdiv">
+    <div class="container1">
+      <div class="top">
+      </div>
+    <div class = "content1">
+    <div id="newdivhead">Son Depremler</div>
+    <div id="bdivcontent">
+        <!-- Bu kısma API'den gelen deprem bilgileri eklenecek -->
+    </div>
+    <div id="earthquakeDetails" class="details"></div>
+  </div>
+  </div>
+  </div>
+
+  <div id="bdiv">
+    <div class="container2">
+      <div class="top">
+      </div>
+    <div class = "content2">
+    <div id="bdivhead">Cihaz Verileri</div>
+    <button class="accordion" onclick="toggleSecondaryMap()">Cihaz 1: Ağır Hasarlı</button>
+    <div id="secondaryMapContainer" style="display:none;">
+        <div id="secondaryMap" style="width: 234.3.4px; height: 400px;"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div id="cdiv">
+    <div class="container3">
+        <div class="top"></div>
+        <div class="content3">
+            <div id="cdivhead">Cihaz Grafikleri</div>
+            <div class="tabcontent-wrapper">
+                    <div class="tab">
+                        <button class="tablinks" onclick="goodtry(event, 'device1')">Cihaz 1</button>
+                        <!-- Move the "Cihaz 2" button here -->
+                        <button class="tablinks" onclick="goodtry(event, 'device2')">Cihaz 2</button>
+                    </div>
+                <!-- End of "Cihaz 2" button placement -->
+                <div id="device1" class="tabcontent" style="float: left; right: 150%;">
+                    <h3>Cihaz 1</h3>
+                    <p>Şu an ölçülen eğim: 130 derece (Ağır hasarlı)</p>
+                    <!-- Move the slope chart div here -->
+                    <div id="slopeChartContainer" style="width: 400; height: 50%; border: 1px solid black; float: right; right: 0;">
+                        <svg id="slopeChart" width="400" height="150" viewBox="0 0 300 150">
+                            <line id="slopeLine" x1="150" y1="25" x2="150" y2="125" stroke="red" stroke-width="2" />
+                        </svg>
+                    </div>
+                    <div id="chart_div" style="right: -200px; top: -185;"></div>
+                </div>
+                <div id="device2" class="tabcontent" style="float: right; right: 150%;">
+                    <h3>Cihaz 2</h3>
+                    <p>Şu an ölçülen eğim: 100 derece (Orta derece hasar)</p>
+                    <div id="slopeChartContainer" style="width: 500px; height: 150px; border: 1px solid black; float: right;">
+                      <svg id="slopeChart" width="500" height="150" viewBox="0 0 300 150">
+                          <line id="slopeLine2" x1="150" y1="25" x2="150" y2="125" stroke="red" stroke-width="2" />
+                      </svg>
+                  </div>
+                  <div id="chart_div" style="right: -200px; top: -185;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <script>
+    ymaps.ready(init);
+    function init() {
+      var myMap = new ymaps.Map("mydiv", {
+        center: [38.3575, 31.4164],
+        zoom: 13
+      });
+      
+      // Add points for different buildings
+      let buildings = [
+        {coordinates: [38.3575, 31.4164], color: 'red', doorNumber: '12A', neighborhood: 'Example Neighborhood'},
+        {coordinates: [38.35, 31.42], color: 'green', doorNumber: '34B', neighborhood: 'Another Neighborhood'},
+        {coordinates: [38.36, 31.41], color: 'green', doorNumber: '56C', neighborhood: 'Yet Another Neighborhood'},
+        {coordinates: [38.365, 31.418], color: 'green', doorNumber: '78D', neighborhood: 'Even More Neighborhood'},
+        {coordinates: [38.355, 31.419], color: 'green', doorNumber: '90E', neighborhood: 'Final Neighborhood'}
+      ];
+      
+      buildings.forEach(building => {
+        var placemark = new ymaps.Placemark(building.coordinates, {}, {
+          preset: 'islands#icon',
+          iconColor: building.color
+        });
+        
+        // Display building information on hover
+        placemark.events.add('mouseenter', function (e) {
+          var coords = e.get('target').geometry.getCoordinates();
+          var target = e.get('target');
+          var balloonContent = 'Coordinates: ' + coords + '<br/>' +
+                              'Door Number: ' + building.doorNumber + '<br/>' +
+                              'Neighborhood: ' + building.neighborhood;
+          var coords = [coords[0] + 0.006, coords[1]]
+          myMap.balloon.open(coords, balloonContent);
+        });
+
+        placemark.events.add('mouseleave', function (e) {
+          myMap.balloon.close();
+        });
+
+        myMap.geoObjects.add(placemark);
+      });
+      
+    }
+    </script>
+  <script>
+    //Make the DIV element draggable only by clicking on the top part:
+    dragElement(document.getElementById("mydiv"), document.getElementById("mydivhead"));
+    dragElement(document.getElementById("bdiv"), document.getElementById("bdivhead"));
+    dragElement(document.getElementById("newdiv"), document.getElementById("newdivhead"));
+    dragElement(document.getElementById("cdiv"), document.getElementById("cdivhead"));
+    
+    function dragElement(elmnt, dragHeader) {
+      var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      dragHeader.onmousedown = dragMouseDown;
+    
+      function dragMouseDown(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+      }
+    
+      function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      }
+    
+      function closeDragElement() {
+        /* stop moving when mouse button is released:*/
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
+    }
+  </script>
+  <script>
+    /*curl -X 'GET' \
+  'https://api.orhanaydogdu.com.tr/deprem/kandilli/live' \
+  -H 'accept: application/json'*/
+  var request = new XMLHttpRequest();
+request.open("GET", "https://api.orhanaydogdu.com.tr/deprem/kandilli/live", true);
+request.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        var response = JSON.parse(request.responseText);
+        var earthquakeList = response.result;
+
+        // Create a table element to display earthquake information
+        var earthquakeText = "<table>";
+        //earthquakeText += "<tr><th>Tarih</th><th>Saat</th><th>Derinlik(km)</th><th>MD</th><th>ML</th><th>Mw</th><th>Yer</th><th>Çözüm Niteliği</th></tr>";
+        earthquakeList.forEach(function(earthquake, index) {
+            var date = earthquake.date.split(" ")[0]; // Extract date part
+            var time = earthquake.date.split(" ")[1]; // Extract time part
+            earthquakeText += "<tr>";
+            earthquakeText += "<td>" + "\n\n" + " " +
+                 //date + "</td><td>" + time + "</td><td>" +
+                //earthquake.depth + "</td><td>" +
+                //earthquake.mag + "</td><td>-</td><td>-</td><td>" +
+                    "\n<span onmouseover=\"showDetails(this, '" + earthquake.depth + "','" + earthquake.mag + "','" + earthquake.date + "')\" onmouseout=\"hideDetails(this)\">" + earthquake.title + "</span></td><td></td>";
+            earthquakeText += "</tr>";
+            if (index < earthquakeList.length - 1) {
+        earthquakeText += "<tr><td colspan='8'></td></tr>";
+    }
+        });
+        earthquakeText += "</table>";
+
+        // Append the table to the bdiv
+        document.getElementById("bdivcontent").innerHTML = earthquakeText;
+    }
+};
+request.send();
+
+function showDetails(element, depth, mag, date) {
+    var details = "Derinlik: " + depth + " km<br>";
+    details += "Büyüklük: " + mag + "<br>";
+    details += "Tarih: " + date;
+    var detailsDiv = document.getElementById("earthquakeDetails");
+    detailsDiv.innerHTML = details;
+    detailsDiv.style.display = "block";
+    var mouseY = event.clientY;
+    detailsDiv.style.top = (mouseY - 58) + "px";
+    detailsDiv.style.left = element.offsetRight + "px";
+}
+
+function hideDetails(element) {
+    document.getElementById("earthquakeDetails").style.display = "none";
+}
+    </script>
+  <script>
+    // your existing JavaScript code...
+
+    var secondaryMapShown = false; // flag to track if secondary map is shown
+    var secondaryMap; // variable to hold the secondary map object
+    var secondaryMapPlacemark;
+
+    // Function to toggle secondary map
+    function toggleSecondaryMap() {
+      if (!secondaryMapShown) {
+        // If secondary map is not shown, create and show it
+        document.getElementById('secondaryMapContainer').style.display = 'block';
+        secondaryMap = new ymaps.Map("secondaryMap", {
+          center: [38.3575, 31.4164],
+          zoom: 17.5
+        });
+        let building = {coordinates: [38.3575, 31.4164], color: 'red', doorNumber: '12A', neighborhood: 'Example Neighborhood'}
+        var placemark = new ymaps.Placemark(building.coordinates, {}, {
+          preset: 'islands#icon',
+          iconColor: building.color
+        });
+        
+        // Display building information on hover
+        placemark.events.add('mouseenter', function (e) {
+          var coords = e.get('target').geometry.getCoordinates();
+          var target = e.get('target');
+          var balloonContent = 'Coordinates: ' + coords + '<br/>' +
+                              'Door Number: ' + building.doorNumber + '<br/>' +
+                              'Neighborhood: ' + building.neighborhood;
+          secondaryMap.balloon.open(coords, balloonContent);
+        });
+
+        placemark.events.add('mouseleave', function (e) {
+          secondaryMap.balloon.close();
+        });
+
+        secondaryMap.geoObjects.add(placemark);
+        secondaryMapShown = true;
+      } else {
+        // If secondary map is shown, hide it
+        document.getElementById('secondaryMapContainer').style.display = 'none';
+        secondaryMapShown = false;
+        if (secondaryMap) {
+          secondaryMap.destroy(); // Destroy the map object
+          secondaryMap = null; // Set the map object variable to null
+        }
+      }
+    }
+  </script>
+  <script>
+    function openCity(evt, cityName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the link that opened the tab
+  document.getElementById(cityName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+function toggleTabContent(tabName) {
+  var tab = document.getElementById(tabName);
+  if (tab.style.display == "block") {
+    tab.style.display = "none";
+  } else {
+    tab.style.display = "block";
+  }
+}
+var activeTab = null; // Global variable to store the active tab
+
+function goodtry(evt, data1) {
+  var cdiv = document.getElementById('cdiv');
+    if (activeTab !== data1) {
+        // If the clicked tab is different from the active tab
+        if (activeTab) {
+            // Hide the currently active tab if it exists
+            document.getElementById(activeTab).style.display = "none";
+        }
+        // Show the clicked tab
+        document.getElementById(data1).style.display = "block";
+        activeTab = data1; // Update the active tab
+        cdiv.style.height = "700px";
+        cdiv.style.top = "calc(50% - 400px)";
+    } else {
+        // If the clicked tab is the same as the active tab, hide it
+        document.getElementById(data1).style.display = "none";
+        activeTab = null; // Reset the active tab
+        cdiv.style.height = "";
+        cdiv.style.top = "";
+    }
+}
+
+// yüzdelik değil açı üzerinden hesaplama yapılır.
+var slope = 130;
+
+// Çizgi grafiğini döndür
+var slopeLine = document.getElementById("slopeLine");
+var centerX = (parseInt(slopeLine.getAttribute("x1")) + parseInt(slopeLine.getAttribute("x2"))) / 2;
+var centerY = (parseInt(slopeLine.getAttribute("y1")) + parseInt(slopeLine.getAttribute("y2"))) / 2;
+var angle = Math.atan2(parseInt(slopeLine.getAttribute("y2")) - parseInt(slopeLine.getAttribute("y1")), parseInt(slopeLine.getAttribute("x2")) - parseInt(slopeLine.getAttribute("x1"))) * 180 / Math.PI;
+var transformValue = "rotate(" + (angle + slope) + " " + centerX + " " + centerY + ")";
+slopeLine.setAttribute("transform", transformValue);
+
+var slope2 = 100;
+
+// Çizgi grafiğini döndür
+var slopeLine2 = document.getElementById("slopeLine2");
+var centerX = (parseInt(slopeLine2.getAttribute("x1")) + parseInt(slopeLine2.getAttribute("x2"))) / 2;
+var centerY = (parseInt(slopeLine2.getAttribute("y1")) + parseInt(slopeLine2.getAttribute("y2"))) / 2;
+var angle = Math.atan2(parseInt(slopeLine2.getAttribute("y2")) - parseInt(slopeLine2.getAttribute("y1")), parseInt(slopeLine2.getAttribute("x2")) - parseInt(slopeLine2.getAttribute("x1"))) * 180 / Math.PI;
+var transformValue = "rotate(" + (angle + slope2) + " " + centerX + " " + centerY + ")";
+slopeLine2.setAttribute("transform", transformValue);
+
+//ısı cizgi
+google.charts.load('current', {packages: ['corechart', 'line']});
+google.charts.setOnLoadCallback(drawLogScales);
+
+function drawLogScales() {
+      var data = new google.visualization.DataTable();
+      data.addColumn('number', 'X');
+      data.addColumn('number', 'Sıcaklık');
+
+      data.addRows([
+      [0, 0], [1, 90], [2, 90], [3, 90], [4, 90], [5, 90],
+    [6, 90], [7, 90], [8, 90], [9, 90], [10, 90], [11, 90],
+    [12, 90], [13, 90], [14, 90], [15, 90], [16, 90], [17, 90],
+    [18, 100], [19, 100], [20, 100], [21, 100], [22, 110], [23, 110],
+    [24, 110], [25, 125], [26, 125], [27, 125], [28, 125], [29, 125],
+    [30, 125]
+      ]);
+
+      var options = {
+        hAxis: {
+          title: 'Günler',
+          logscale: true
+        },
+        vAxis: {
+          title: 'Sıcaklık',
+          logscale: true
+        },
+        colors: ['#a52714'],
+        width: 1200,
+        height: 200,
+        right: 300,
+      };
+
+      var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+      chart.draw(data, options);
+    }/*
+
+//ısı göstergesi
+google.charts.load('current', {'packages':['gauge']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Derece', 25]
+        ]);
+
+        var options = {
+          width: 400, height: 180,
+          redFrom: -10, redTo: 10,
+          yellowFrom:35, yellowTo: 45,
+          minorTicks: 11,
+          max: 40,
+          min: -10,
+          redColor: "#0000ff"
+        };
+
+        var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+
+        chart.draw(data, options);
+
+        setInterval(function() {
+          data.setValue(0, 1);
+          chart.draw(data, options);
+        }, 130);
+      }*/
+  </script>
+    <script>
+function toggleBackground() {
+  var backgroundSwitch = document.getElementById("backgroundSwitch");
+  var divElements = document.querySelectorAll("#mydiv, #bdiv, table, #newdiv, #cdiv, #earthquakeDetails");
+  var heds = document.querySelectorAll("#bdivhead, #newdivhead, #cdivhead, #mydivhead");
+  var slop = document.querySelectorAll("#slopeChart");
+  var divElements2 = document.querySelectorAll("table");
+  // Renkleri değiştirme fonksiyonu
+  function changeColors() {
+    divElements.forEach(function(div) {
+      div.style.backgroundColor = "#171717";
+      div.style.color = "white";
+    });
+  }
+
+  // Renkleri geri yükleme fonksiyonu
+  function restoreColors() {
+    divElements.forEach(function(div) {
+      div.style.backgroundColor = "#ffffff";
+      div.style.color = "black";
+    });
+  }
+
+  function teburu() {
+    divElements2.forEach(function(div) {
+      div.style.backgroundColor = "rgb(255, 255, 240)";
+      div.style.color = "black";
+    });
+  }
+
+  function heddo1() {
+    heds.forEach(function(div) {
+        div.style.backgroundColor = "#3a3a3a";
+        div.style.color = "white";
+    });
+  }
+
+  function heddo2() {
+    heds.forEach(function(div) {
+        div.style.backgroundColor = "#f1f1f1";
+        div.style.color = "black";
+    });
+  }
+
+  function slopi() {
+    slop.forEach(function(div) {
+        div.style.border = "1px solid black";
+    });
+  }
+
+  function slopi2() {
+    slop.forEach(function(div) {
+        div.style.border = "1px solid white";
+    });
+  }
+
+  // Checkbox'ın durumuna göre renkleri değiştir veya geri yükle
+  if (backgroundSwitch.checked) {
+    changeColors();
+    heddo1();
+    slopi2()
+  } else {
+    if (!backgroundSwitch.checked) {
+      restoreColors();
+      teburu();
+      heddo2();
+      slopi();
+    }
+  }
+}
+
+</script>
+  <script>
+let dereceVerisi = null; // Başlangıçta null olarak tanımlayın
+
+async function dereceAl() {
+  try {
+    const response = await fetch('http://localhost:8000/info.json');
+    const data = await response.json();
+    dereceVerisi = data.derece;
+    console.log(`Derece: ${data.derece}`);
+  } catch (error) {
+    console.error('Hata:', error);
+  }
+}
+
+dereceAl(); // Fonksiyonu hemen çağırın
+
+function dereceGoster() {
+  if (dereceVerisi) {
+    console.log(`Dışarıda kullanılan derece: ${dereceVerisi}`);
+  }
+}
+
+// Kodunuzun geri kalanı...
+
+dereceGoster(); // İstediğiniz zaman fonksiyonu çağırabilirsiniz
+
+
+
+async function test() {
+  return await fetch('http://localhost:8000/info.json', { mode: "no-cors" });
+}
+
+async function wrapper() {  
+  let t = await test();
+  console.log(JSON.parse(t));
+}
+
+wrapper();
+
+</script>
+
+</body>
+</html>
