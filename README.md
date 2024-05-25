@@ -1,7 +1,7 @@
 
 
 # About Me:
-🌱 I’m currently learning Python, JavaScript
+🌱 I’m currently learning Python and JavaScript
 
 
 ## Contact:
